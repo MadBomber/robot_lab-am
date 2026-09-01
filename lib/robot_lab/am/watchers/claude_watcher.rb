@@ -52,6 +52,8 @@ module RobotLab
           File.readlines(file).last(500).filter_map { |line| human_message_event(line) }.last(@limit)
         end
 
+        # :reek:FeatureEnvy -- parsing one transcript line into an Event is
+        # inherently reading `record`/`text` more than `self`.
         def human_message_event(line)
           record = JSON.parse(line)
           return nil unless record["type"] == "user"

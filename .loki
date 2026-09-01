@@ -1,0 +1,10 @@
+# frozen_string_literal: true
+# robot_lab-am — watches repo activity (git, terminal, Claude Code sessions) to infer intent.
+
+import_up "repo_dev.loki"
+
+class Tasks
+  @@gem_name ||= "robot_lab-am".freeze
+
+  header "robot_lab-am v#{gem_version} — activity monitor for RobotLab"
+end

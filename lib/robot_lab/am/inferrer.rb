@@ -72,6 +72,8 @@ module RobotLab
         response[/```ya?ml\n(.*?)```/m, 1] || response
       end
 
+      # :reek:FeatureEnvy -- this method's whole job is reading the parsed
+      # YAML hash into an Intent; that's not a sign it belongs elsewhere.
       def build_intent(data, response)
         Intent.new(
           goal: data["goal"] || response.strip,
