@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-# Quality gates (quality, rubocop_check, flog_check, flay_check, ...) and
-# documentation tasks (doc_builder, doc_server) live in asgard — see .loki
-# and the shared dev/*.loki files it imports. This Rakefile keeps only the
-# tasks asgard itself delegates to: the test suite and the bundler gem
-# lifecycle.
+# Quality gates (quality, rubocop_check, flog_check, flay_check, ...),
+# documentation tasks (doc_builder, doc_server), and the gem lifecycle
+# (build, install, release) live in asgard — see .loki and the shared
+# dev/*.loki files it imports. This Rakefile keeps only the task asgard
+# itself delegates to: the test suite.
 
-require 'bundler/gem_tasks'
 require 'rake/testtask'
 
 Rake::TestTask.new(:test) do |t|
