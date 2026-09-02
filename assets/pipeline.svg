@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="robot_lab-am pipeline">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <style>
+    .t  { fill:#ffffff; font-size:13px; font-weight:600; }
+    .s  { fill:#e2e8f0; font-size:10px; }
+    .hd { fill:#cbd5e1; font-size:12px; font-weight:700; letter-spacing:.5px; }
+    .lg { fill:#cbd5e1; font-size:11px; }
+  </style>
+
+  <!-- signal sources -->
+  <text x="40" y="14" class="hd">SIGNAL SOURCES (human activity)</text>
+  <rect x="40" y="24" width="250" height="46" rx="10" fill="#64748b"/>
+  <text x="165" y="45" text-anchor="middle" class="t">Git repo</text>
+  <text x="165" y="61" text-anchor="middle" class="s">commits · uncommitted changes</text>
+
+  <rect x="325" y="24" width="250" height="46" rx="10" fill="#64748b"/>
+  <text x="450" y="45" text-anchor="middle" class="t">Claude Code transcripts</text>
+  <text x="450" y="61" text-anchor="middle" class="s">~/.claude/projects/&lt;slug&gt;/*.jsonl</text>
+
+  <rect x="610" y="24" width="250" height="46" rx="10" fill="#64748b"/>
+  <text x="735" y="45" text-anchor="middle" class="t">Terminal preexec log</text>
+  <text x="735" y="61" text-anchor="middle" class="s">~/.activity_monitor/terminal_activity.log</text>
+
+  <line x1="165" y1="70" x2="165" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="450" y1="70" x2="450" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="735" y1="70" x2="735" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- watchers -->
+  <rect x="40" y="100" width="250" height="46" rx="10" fill="#0891b2"/>
+  <text x="165" y="121" text-anchor="middle" class="t">GitWatcher</text>
+  <text x="165" y="137" text-anchor="middle" class="s">recent commits + WIP (own state dir filtered)</text>
+
+  <rect x="325" y="100" width="250" height="46" rx="10" fill="#0891b2"/>
+  <text x="450" y="121" text-anchor="middle" class="t">ClaudeWatcher</text>
+  <text x="450" y="137" text-anchor="middle" class="s">your own plain-language messages</text>
+
+  <rect x="610" y="100" width="250" height="46" rx="10" fill="#0891b2"/>
+  <text x="735" y="121" text-anchor="middle" class="t">TerminalWatcher</text>
+  <text x="735" y="137" text-anchor="middle" class="s">only commands with cwd inside the repo</text>
+
+  <line x1="165" y1="146" x2="435" y2="196" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="450" y1="146" x2="450" y2="196" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="735" y1="146" x2="465" y2="196" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- collector -->
+  <rect x="300" y="198" width="300" height="52" rx="10" fill="#f59e0b"/>
+  <text x="450" y="220" text-anchor="middle" class="t">Collector</text>
+  <text x="450" y="237" text-anchor="middle" class="s">Redactor masks secrets · fingerprint dedupe</text>
+  <line x1="450" y1="250" x2="450" y2="278" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- event store -->
+  <rect x="325" y="280" width="250" height="46" rx="10" fill="#475569"/>
+  <text x="450" y="301" text-anchor="middle" class="t">.robot_lab_am/events.jsonl</text>
+  <text x="450" y="317" text-anchor="middle" class="s">append-only event log, one JSON line per event</text>
+  <line x1="450" y1="326" x2="450" y2="354" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- inferrer + local LLM -->
+  <rect x="325" y="356" width="250" height="52" rx="10" fill="#a855f7"/>
+  <text x="450" y="378" text-anchor="middle" class="t">Inferrer</text>
+  <text x="450" y="395" text-anchor="middle" class="s">bounded recent window (last 100 events)</text>
+
+  <rect x="640" y="356" width="220" height="52" rx="10" fill="#10b981"/>
+  <text x="750" y="378" text-anchor="middle" class="t">Local LLM</text>
+  <text x="750" y="395" text-anchor="middle" class="s">LM Studio · localhost:1234 · no API key</text>
+  <line x1="575" y1="376" x2="638" y2="376" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="638" y1="392" x2="577" y2="392" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <line x1="450" y1="408" x2="450" y2="436" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- intent artifact -->
+  <rect x="325" y="438" width="250" height="52" rx="10" fill="#6366f1"/>
+  <text x="450" y="460" text-anchor="middle" class="t">.robot_lab_am/current_intent.md</text>
+  <text x="450" y="477" text-anchor="middle" class="s">goal · confidence · evidence · open questions</text>
+  <line x1="450" y1="490" x2="450" y2="518" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- consumer -->
+  <rect x="325" y="520" width="250" height="46" rx="10" fill="#0ea5e9"/>
+  <text x="450" y="541" text-anchor="middle" class="t">robot_lab-to</text>
+  <text x="450" y="557" text-anchor="middle" class="s">seeds a takeover run with real context</text>
+
+  <!-- daemon loop -->
+  <rect x="40" y="280" width="220" height="128" rx="10" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="150" y="304" text-anchor="middle" class="t">Daemon (am start)</text>
+  <text x="150" y="326" text-anchor="middle" class="lg">polls watchers every 15s</text>
+  <text x="150" y="344" text-anchor="middle" class="lg">debounced inference (≥300s apart)</text>
+  <text x="150" y="362" text-anchor="middle" class="lg">heartbeat.json every tick</text>
+  <text x="150" y="380" text-anchor="middle" class="lg">pid file · SIGTERM stop</text>
+  <text x="150" y="398" text-anchor="middle" class="lg">supervised by launchd (am install)</text>
+  <line x1="260" y1="344" x2="298" y2="240" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+  <line x1="260" y1="382" x2="323" y2="382" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+
+  <!-- legend -->
+  <text x="40" y="620" class="hd">ONE-SHOT PATH</text>
+  <text x="40" y="640" class="lg">am snapshot runs the same pipeline once — collect → infer → write — with no daemon.</text>
+  <text x="40" y="660" class="lg">Everything runs on your machine: the activity log is only ever summarized by a local model.</text>
+</svg>
