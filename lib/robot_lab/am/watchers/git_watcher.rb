@@ -41,10 +41,15 @@ module RobotLab
 
         def wip_events
           out, _err, status = Open3.capture3(GIT_ENV, "git", "status", "--short", chdir: @repo)
-          return [] unless status.success? && !out.strip.empty?
+          return [] unless status.success?
+
+          # This gem's own state dir is not the human's work — reporting it
+          # would make the daemon observe (and infer over) its own footprint.
+          lines = out.lines.map(&:chomp).reject { |line| line.empty? || line.include?(".robot_lab_am") }
+          return [] if lines.empty?
 
           [Event.new(timestamp: Time.now.utc.iso8601, repo: @repo, source: "git", kind: "wip",
-                     summary: "Uncommitted changes:\n#{out.strip}")]
+                     summary: "Uncommitted changes:\n#{lines.join("\n")}")]
         end
       end
     end

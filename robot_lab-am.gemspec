@@ -8,10 +8,11 @@ Gem::Specification.new do |spec|
   spec.authors = ["Dewayne VanHoozer"]
   spec.email = ["dvanhoozer@gmail.com"]
 
-  spec.summary = "Watches terminal, git, and Claude Code activity to infer project intent for RobotLab."
-  spec.description = "Background daemon that watches a repo's git activity, Claude Code session " \
-                     "transcripts, and terminal commands, then infers the current goal/direction " \
-                     "so robot_lab-to can seed a takeover run with real context instead of a cold objective."
+  spec.summary = "Watches terminal, git, and Claude Code activity to infer what you're working on."
+  spec.description = "Standalone background daemon that watches a repo's git activity, Claude Code " \
+                     "session transcripts, and terminal commands, then infers the current goal/direction " \
+                     "via a one-shot RubyLLM call to a local model. Writes an intent artifact any tool " \
+                     "can read — robot_lab-to uses it to seed takeover runs, but nothing here requires RobotLab."
   spec.homepage = "https://github.com/MadBomber/robot_lab-am"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -33,7 +34,8 @@ Gem::Specification.new do |spec|
   spec.executables = ["am"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "robot_lab", ">= 0.1"
+  spec.add_dependency "myway_config", "~> 0.1"
+  spec.add_dependency "ruby_llm", ">= 1.12"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://guides.rubygems.org/make-your-own-gem/

@@ -4,30 +4,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Gem Does
 
-`robot_lab-am` ("activity monitor") is a planned [RobotLab](https://github.com/MadBomber/robot_lab)
-extension gem that watches a repo working directory — git activity, Claude Code
-session transcripts, and terminal commands — and infers the current goal or
-direction of work. The inferred intent is meant to seed
+`robot_lab-am` ("activity monitor") is a **standalone** gem (RobotLab-family
+naming, but no robot_lab dependency — just `ruby_llm` + `myway_config`) that
+watches a repo working directory — git activity, Claude Code session
+transcripts, and terminal commands — and infers the current goal or
+direction of work via a one-shot local-LLM call. The inferred intent seeds
 [`robot_lab-to`](https://github.com/MadBomber/robot_lab-to)'s takeover runs with
-real context instead of a cold objective string typed at invocation time.
+real context instead of a cold objective string, but any tool can consume it.
 
-**Status: working one-shot pipeline, no daemon yet.** `am snapshot` really
-collects git/Claude Code/terminal activity, infers a goal via a local LLM,
-and writes `.robot_lab_am/current_intent.md` — verified end to end against
-`robot_lab_project`'s own history. `start`/`stop`/`status` (the continuous
-daemon from ARCHITECTURE.md) are still stubs. See `ARCHITECTURE.md` for
-the full component survey and decisions made so far.
+**Status: complete v1 — one-shot pipeline and continuous daemon.**
+`am snapshot` collects git/Claude Code/terminal activity, infers a goal via
+a local LLM, and writes `.robot_lab_am/current_intent.md`. `am start`/`stop`/
+`status` run the continuous daemon (detached, pid file + heartbeat,
+debounced inference), and `am install`/`uninstall` manage a launchd agent
+that supervises it. All verified end to end against a live daemon and a
+real LM Studio model. See `ARCHITECTURE.md` for the component survey and
+decisions.
 
 ## Commands
 
 ```bash
 bundle exec rake test          # all tests
-bundle exec rake test_verbose  # verbose test output
 bundle exec rake test_file[path]  # single test file
-bundle exec rake quality       # tests + coverage + rubocop + flog + flay
+asgard quality                 # all *_check gates in parallel (tests + coverage,
+                               #   rubocop, flog, flay, reek, fasterer, typos, ...)
+asgard doc_builder             # build the MkDocs site
+asgard doc_server              # serve docs locally
 bin/console                    # IRB shell with gem loaded
 bin/am --help                  # CLI help
-bin/am snapshot [--repo PATH]  # the working command — see below
+bin/am snapshot [--repo PATH]  # one-shot: collect + infer + write intent
+bin/am start [--foreground]    # start the daemon (detached by default)
+bin/am stop|status             # stop / inspect the daemon
+bin/am install|uninstall       # manage the launchd agent plist
 ```
 
 ## Decided so far (see ARCHITECTURE.md for detail)
@@ -53,13 +61,36 @@ bin/am snapshot [--repo PATH]  # the working command — see below
   OpenAI-compatible server (`lms server start`, `localhost:1234/v1`) —
   explicitly not Anthropic. Your own activity log shouldn't have to
   leave the machine, or need an API key, just to be summarized.
+- **RubyLLM directly, no robots** (2026-09-02): the inference is a
+  one-shot prompt, so `Inferrer` calls
+  `RubyLLM.context.chat(model:, provider:, assume_model_exists: true)`
+  in a scoped context (host apps' global RubyLLM config inherited,
+  never mutated). The gem no longer depends on `robot_lab` — deps are
+  `ruby_llm` + `myway_config` only, so it's usable outside the
+  robot_lab-to environment. Injectable seam is `chat:` (responds to
+  `#ask(prompt)` returning a message with `#content`).
+- **Configuration**: `Config < MywayConfig::Base` (same pattern as
+  robot_lab-to). Cascade: `config/defaults.yml` →
+  `~/.config/robot_lab_am/robot_lab_am.yml` (flat keys) →
+  `RLAM_*` env vars → CLI flags / constructor keywords.
+  Settings: provider, model, api_base, interval, debounce,
+  inference_window, terminal_log. `Am.config` is the memoized
+  process-wide instance (`Am.reset_config!` in tests). Caveat: the
+  defaults.yml-backed ivars are assigned by `super()` — never pre-nil
+  them in `Config#initialize`.
 
-## Open questions
-
-See the "Open questions" section at the bottom of `ARCHITECTURE.md` —
-inference cadence and log rotation for the terminal log are still
-unresolved. (Single-repo vs multi-repo scope is resolved: one repo per
-daemon instance.)
+- **Inference cadence**: debounced — the daemon polls watchers every
+  `--interval` seconds (default 15) but re-infers only when new events
+  have arrived since the last inference, and at most once per
+  `--debounce` seconds (default 300). A failed inference (LLM down) is
+  retried on the same debounce, and never kills the daemon.
+- **Redaction**: `Redactor` masks credential-shaped values (key/token/
+  secret/password assignments, bearer tokens, well-known token formats)
+  before any event is stored or sent to the LLM.
+- **Dedupe**: `Collector` fingerprints events against the existing
+  `events.jsonl`, so repeated snapshots/daemon restarts never duplicate
+  log lines. `wip` events dedupe on summary (their timestamps are
+  collection-time), everything else on timestamp + summary.
 
 ## Testing
 

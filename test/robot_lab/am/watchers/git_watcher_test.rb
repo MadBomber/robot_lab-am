@@ -35,6 +35,23 @@ module RobotLab
           end
         end
 
+        def test_wip_ignores_the_gems_own_state_directory
+          with_tmp_dir do |dir|
+            init_repo(dir)
+            FileUtils.mkdir_p(File.join(dir, ".robot_lab_am"))
+            File.write(File.join(dir, ".robot_lab_am", "events.jsonl"), "{}\n")
+
+            wip_events = GitWatcher.new(repo: dir).events.select { |e| e.kind == "wip" }
+            assert_empty wip_events
+
+            File.write(File.join(dir, "real_work.rb"), "# wip")
+            wip = GitWatcher.new(repo: dir).events.find { |e| e.kind == "wip" }
+
+            assert_match(/real_work\.rb/, wip.summary)
+            refute_match(/robot_lab_am/, wip.summary)
+          end
+        end
+
         private
 
         def init_repo(dir)

@@ -1,0 +1,18 @@
+defaults:
+  provider: openai                                   # RubyLLM provider for inference
+  model: qwen/qwen3.8-27b                            # local model served by LM Studio
+  api_base: http://localhost:1234/v1                 # OpenAI-compatible local server
+  api_key: null                                      # null = provider env var, or none (local)
+  interval: 15                                       # seconds between daemon watcher polls
+  debounce: 300                                      # minimum seconds between inference runs
+  inference_window: 100                              # most recent events sent to the model
+  terminal_log: ~/.activity_monitor/terminal_activity.log  # preexec command log
+
+development:
+  {}
+
+test:
+  {}
+
+production:
+  {}

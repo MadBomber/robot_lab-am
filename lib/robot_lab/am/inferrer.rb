@@ -1,21 +1,27 @@
 # frozen_string_literal: true
 
 require "yaml"
+require "ruby_llm"
 
 module RobotLab
   module Am
-    # Summarizes a bounded window of Events into a structured Intent via a
-    # small RobotLab::Robot. `robot:` is injectable so callers (and tests)
-    # never have to make a real LLM call to exercise this class.
+    # Summarizes a bounded window of Events into a structured Intent with a
+    # one-shot RubyLLM chat — no robots, no robot_lab dependency, so the gem
+    # is useful outside the robot_lab-to environment too. `chat:` is
+    # injectable so callers (and tests) never have to make a real LLM call
+    # to exercise this class.
     #
-    # Defaults to a local model served by LM Studio's OpenAI-compatible API
-    # (`lms server start`), not a hosted provider — inference over your own
-    # activity log shouldn't require sending it, or an API key, anywhere.
+    # Provider, model, API base, and key come from Am::Config (defaults.yml
+    # -> user config file -> RLAM_* env vars -> keyword overrides).
+    # The shipped default is a local model served by LM Studio's
+    # OpenAI-compatible API (`lms server start`), not a hosted provider —
+    # inference over your own activity log shouldn't require sending it,
+    # or an API key, anywhere.
     class Inferrer
-      DEFAULT_PROVIDER = :openai
-      DEFAULT_MODEL = "qwen/qwen3.8-27b"
-      DEFAULT_API_BASE = "http://localhost:1234/v1"
-      API_BASE_ENV_VAR = "ROBOT_LAB_RUBY_LLM__OPENAI_API_BASE"
+      # LM Studio ignores the key but RubyLLM's :openai provider requires
+      # one to be configured; used only when neither the config nor the
+      # provider's conventional env var supplies a real key.
+      PLACEHOLDER_API_KEY = "no-key-required"
 
       SYSTEM_PROMPT = <<~PROMPT
         You infer what a software developer is currently working on from a
@@ -32,8 +38,9 @@ module RobotLab
           - <anything ambiguous or unresolved>
       PROMPT
 
-      def initialize(robot: nil, model: DEFAULT_MODEL, provider: DEFAULT_PROVIDER)
-        @robot = robot
+      def initialize(chat: nil, config: nil, model: nil, provider: nil)
+        @chat = chat
+        @config = config
         @model = model
         @provider = provider
       end
@@ -41,19 +48,42 @@ module RobotLab
       def infer(events, repo:)
         return empty_intent if events.empty?
 
-        parse(robot.run(build_prompt(events, repo)).last_text_content)
+        parse(chat.ask(build_prompt(events, repo)).content)
       end
 
       private
 
-      def robot
-        @robot ||= build_robot
+      def chat
+        @chat ||= build_chat
       end
 
-      def build_robot
-        ENV[API_BASE_ENV_VAR] ||= DEFAULT_API_BASE if @provider == :openai
-        RobotLab.build(name: "robot_lab-am-inferrer", system_prompt: SYSTEM_PROMPT,
-                       model: @model, provider: @provider)
+      def config   = @config ||= Am.config
+      def model    = @model || config.model
+      def provider = @provider || config.provider
+
+      # assume_model_exists: local model names aren't in RubyLLM's registry.
+      def build_chat
+        llm_context.chat(model: model, provider: provider, assume_model_exists: true)
+                   .with_instructions(SYSTEM_PROMPT)
+      end
+
+      # A scoped RubyLLM context (a dup of the global config), so embedding
+      # robot_lab-am in a larger app never mutates that app's RubyLLM setup.
+      # api_base is an OpenAI-compatible-server concern and is only applied
+      # to the :openai provider.
+      def llm_context
+        RubyLLM.context do |llm|
+          llm.openai_api_base = config.api_base if provider == :openai
+          key_setter = :"#{provider}_api_key="
+          llm.public_send(key_setter, api_key) if llm.respond_to?(key_setter)
+        end
+      end
+
+      # Cascade: explicit config -> the provider's conventional env var
+      # (OPENAI_API_KEY, ANTHROPIC_API_KEY, ...) -> placeholder for keyless
+      # local servers.
+      def api_key
+        config.api_key || ENV.fetch("#{provider.to_s.upcase}_API_KEY") { PLACEHOLDER_API_KEY }
       end
 
       def build_prompt(events, repo)

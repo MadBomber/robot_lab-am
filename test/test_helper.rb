@@ -10,7 +10,6 @@ end
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 
-require "robot_lab"
 require "robot_lab/am"
 
 require "minitest/autorun"
@@ -44,13 +43,13 @@ module RobotLab
         Dir.mktmpdir { |dir| yield File.realpath(dir) }
       end
 
-      # A minimal fake robot_lab Robot: responds to #run(prompt) the way
-      # RobotLab::Robot does, without any network call.
-      FakeRobot = Struct.new(:response) do
-        Result = Struct.new(:last_text_content)
+      # A minimal fake RubyLLM chat: responds to #ask(prompt) the way
+      # RubyLLM::Chat does, without any network call.
+      FakeChat = Struct.new(:response) do
+        Message = Struct.new(:content)
 
-        def run(_prompt)
-          Result.new(response)
+        def ask(_prompt)
+          Message.new(response)
         end
       end
     end
