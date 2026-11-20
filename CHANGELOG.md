@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Changed
+
+- **Minimum Ruby raised to 4.0.9.** `required_ruby_version` is now `>= 4.0.9` (was `>= 3.2.0`), and a `.ruby-version` file pins development to 4.0.9.
+
 - **Standalone: dropped the robot_lab dependency.** Inference is a one-shot
   prompt, so `Inferrer` now calls RubyLLM directly (scoped
   `RubyLLM.context`, `assume_model_exists: true`) instead of building a
