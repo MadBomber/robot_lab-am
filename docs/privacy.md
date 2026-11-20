@@ -18,7 +18,7 @@ You *can* point it at any RubyLLM provider programmatically — that's a
 deliberate, visible choice, never the default:
 
 ```ruby
-RobotLab::Am::Inferrer.new(model: "claude-sonnet-4", provider: :anthropic)
+RobotLab::Am::Inferrer.new(model: "sonnet-5.5", provider: :claude_code)
 ```
 
 ## 2. Read-side scoping of the terminal log
